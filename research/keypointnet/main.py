@@ -216,8 +216,8 @@ def estimate_rotation(xyz0, xyz1, pconf, noise):
     [batch, 3, 3] A batch of transposed 3 x 3 rotation matrices.
   """
 
-  xyz0 += tf.random_normal(tf.shape(xyz0), mean=0, stddev=noise)
-  xyz1 += tf.random_normal(tf.shape(xyz1), mean=0, stddev=noise)
+  xyz0 += tf.random.normal(tf.shape(xyz0), mean=0, stddev=noise)
+  xyz1 += tf.random.normal(tf.shape(xyz1), mean=0, stddev=noise)
 
   pconf2 = tf.expand_dims(pconf, 2)
   cen0 = tf.reduce_sum(xyz0 * pconf2, 1, keepdims=True)
@@ -226,10 +226,10 @@ def estimate_rotation(xyz0, xyz1, pconf, noise):
   x = xyz0 - cen0
   y = xyz1 - cen1
 
-  cov = tf.matmul(tf.matmul(x, tf.matrix_diag(pconf), transpose_a=True), y)
-  _, u, v = tf.svd(cov, full_matrices=True)
+  cov = tf.matmul(tf.matmul(x, tf.linalg.diag(pconf), transpose_a=True), y)
+  _, u, v = tf.linalg.svd(cov, full_matrices=True)
 
-  d = tf.matrix_determinant(tf.matmul(v, u, transpose_b=True))
+  d = tf.linalg.det(tf.matmul(v, u, transpose_b=True))
   ud = tf.concat(
       [u[:, :, :-1], u[:, :, -1:] * tf.expand_dims(tf.expand_dims(d, 1), 1)],
       axis=2)
